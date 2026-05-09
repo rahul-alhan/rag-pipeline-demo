@@ -1,0 +1,22 @@
+[
+  {
+    "question": "What is the SLA for items with a copyright similarity score above 0.85?",
+    "ground_truth": "They must be escalated to a human reviewer within 24 hours."
+  },
+  {
+    "question": "What confidence threshold is required for an automated moderation decision to be acted on without human review?",
+    "ground_truth": "At least 0.90."
+  },
+  {
+    "question": "What happens when an asset matches the registered trademarks database?",
+    "ground_truth": "It results in an automatic Reject."
+  },
+  {
+    "question": "How long are moderation audit records retained?",
+    "ground_truth": "18 months."
+  },
+  {
+    "question": "What are the four reviewer decision categories?",
+    "ground_truth": "Approve, Reject, Request Edit, and Escalate."
+  }
+]
