@@ -2,7 +2,7 @@
 
 Production-style Retrieval-Augmented Generation pipeline with chunking strategy, dense retrieval, hallucination control, and automated quality gates via **RAGAS**.
 
-> Mirrors the architecture used in production at Algoworks for content moderation and copyright risk assessment over a large unstructured corpus.
+> Mirrors an architecture used in a prior production role for content moderation and copyright risk assessment over a large unstructured corpus.
 
 ---
 
