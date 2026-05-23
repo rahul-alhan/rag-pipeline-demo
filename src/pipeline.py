@@ -11,6 +11,7 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_openai import ChatOpenAI
 
 from .config import CONFIG
+from .formatting import format_context
 from .retriever import get_retriever
 
 
@@ -27,14 +28,6 @@ USER_PROMPT = """Context:
 Question: {question}
 
 Answer (with inline [source: ...] citations):"""
-
-
-def _format_context(docs) -> str:
-    parts = []
-    for i, d in enumerate(docs, 1):
-        src = d.metadata.get("source", f"doc_{i}")
-        parts.append(f"[doc {i} | source: {src}]\n{d.page_content}")
-    return "\n\n".join(parts)
 
 
 @dataclass
@@ -65,7 +58,7 @@ def build_chain():
 def answer(question: str) -> RAGAnswer:
     retriever, generation = build_chain()
     docs = retriever.invoke(question)
-    ctx = _format_context(docs)
+    ctx = format_context(docs)
     text = generation.invoke({"context": ctx, "question": question})
     return RAGAnswer(
         question=question,
