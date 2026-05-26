@@ -1,18 +1,17 @@
-"""RAG chain with citation enforcement and structured output."""
+"""RAG chain with citation enforcement and structured output.
+
+LangChain / OpenAI / Chroma imports are deferred into `build_chain()` so
+this module can be imported (and `answer()` tested with mocks) on a box
+without those heavy deps installed.
+"""
 from __future__ import annotations
 
 import argparse
 import json
 from dataclasses import dataclass
 
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables import RunnablePassthrough
-from langchain_openai import ChatOpenAI
-
 from .config import CONFIG
 from .formatting import format_context
-from .retriever import get_retriever
 
 
 SYSTEM_PROMPT = """You are a precise assistant. Answer ONLY using the provided context.
@@ -47,6 +46,12 @@ class RAGAnswer:
 
 
 def build_chain():
+    from langchain_core.output_parsers import StrOutputParser
+    from langchain_core.prompts import ChatPromptTemplate
+    from langchain_openai import ChatOpenAI
+
+    from .retriever import get_retriever
+
     retriever = get_retriever()
     llm = ChatOpenAI(model=CONFIG.llm_model, temperature=0)
     prompt = ChatPromptTemplate.from_messages(
@@ -55,8 +60,16 @@ def build_chain():
     return retriever, prompt | llm | StrOutputParser()
 
 
-def answer(question: str) -> RAGAnswer:
-    retriever, generation = build_chain()
+def answer(question: str, retriever=None, generation=None) -> RAGAnswer:
+    """RAG answer for a question.
+
+    `retriever` and `generation` are dependency-injection seams — pass mocks
+    in tests to exercise this function without OpenAI / Chroma in the loop.
+    Both must be objects with an `.invoke(...)` method (LangChain Runnable
+    contract).
+    """
+    if retriever is None or generation is None:
+        retriever, generation = build_chain()
     docs = retriever.invoke(question)
     ctx = format_context(docs)
     text = generation.invoke({"context": ctx, "question": question})

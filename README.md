@@ -40,6 +40,7 @@ Production-style Retrieval-Augmented Generation pipeline with chunking strategy,
 ```bash
 # 1. Install
 pip install -r requirements.txt
+# (or `pip install -r requirements-dev.txt` to also pull pytest for the test suite)
 
 # 2. Set your OpenAI key
 export OPENAI_API_KEY=sk-...
@@ -58,6 +59,18 @@ python -m src.evaluate --eval-set eval/eval_set.json
 ```
 
 Or open `notebooks/demo.ipynb` for an end-to-end walkthrough.
+
+---
+
+## Running Tests
+
+```bash
+pip install -r requirements-dev.txt
+python -m pytest -q
+```
+
+Tests cover config invariants, the context formatter, and a mocked `answer()`
+flow — no OpenAI API key or network calls required.
 
 ---
 
