@@ -87,16 +87,18 @@ flow — no OpenAI API key or network calls required.
 
 ---
 
-## Evaluation Results (sample corpus)
+## What the Evaluation Reports
 
-| Metric | Score |
-|---|---|
-| Faithfulness | 0.91 |
-| Answer Relevance | 0.88 |
-| Context Precision @ k=4 | 0.83 |
-| Context Recall | 0.86 |
+Running `python -m src.evaluate --eval-set eval/eval_set.json` against your indexed corpus emits one row per RAGAS metric:
 
-> Numbers above are illustrative; actual values depend on your corpus and eval set.
+- **Faithfulness** — does the answer stick to the retrieved context? (drops if the model invents facts the docs don't support)
+- **Answer Relevance** — does the answer address the question? (drops on tangential responses)
+- **Context Precision @ k** — were the retrieved docs actually useful for the answer? (drops on noisy retrieval)
+- **Context Recall** — did retrieval surface the docs needed to answer? (drops on under-retrieval)
+
+The promotion gates in `src/config.py` (`faithfulness >= 0.85`, `context_precision >= 0.80`) block CI on regression — you treat eval as a build step, not a vibes check.
+
+Run it on the included sample corpus + eval set to see the actual numbers for your stack and your OpenAI usage tier.
 
 ---
 
