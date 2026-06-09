@@ -1,8 +1,14 @@
 # RAG Pipeline Demo
 
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/rahul-alhan/rag-pipeline-demo/blob/main/notebooks/demo.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/rahul-alhan/rag-pipeline-demo/main?filepath=notebooks/demo.ipynb)
+[![ci](https://github.com/rahul-alhan/rag-pipeline-demo/actions/workflows/ci.yml/badge.svg)](https://github.com/rahul-alhan/rag-pipeline-demo/actions/workflows/ci.yml)
+
 Production-style Retrieval-Augmented Generation pipeline with chunking strategy, dense retrieval, hallucination control, and automated quality gates via **RAGAS**.
 
 > Mirrors an architecture used in a prior production role for content moderation and copyright risk assessment over a large unstructured corpus.
+
+**Try it without cloning** → click the **Open in Colab** badge above to run `notebooks/demo.ipynb` against the included sample corpus.
 
 ---
 
