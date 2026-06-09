@@ -69,8 +69,42 @@ pip install -r requirements-dev.txt
 python -m pytest -q
 ```
 
-Tests cover config invariants, the context formatter, and a mocked `answer()`
-flow — no OpenAI API key or network calls required.
+Tests cover config invariants, the context formatter, the backend dispatcher
+(Chroma ↔ OpenSearch routing), and a mocked `answer()` flow — no OpenAI API
+key, no Chroma instance, and no OpenSearch cluster required.
+
+---
+
+## Switching to OpenSearch
+
+The same code runs against Chroma (default, local files) or OpenSearch
+(production-ready kNN). Set one env var:
+
+```bash
+export RAG_BACKEND=opensearch
+export OPENSEARCH_HOST=https://your-cluster:9200
+export OPENSEARCH_INDEX=rag-demo
+export OPENSEARCH_USER=admin
+export OPENSEARCH_PASSWORD=...
+# Re-ingest into OpenSearch:
+python -m src.ingest --docs ./docs
+# Query unchanged:
+python -m src.pipeline --query "What are the copyright escalation rules?"
+```
+
+`get_retriever()` dispatches based on `CONFIG.backend`. The OpenSearch backend
+imports `opensearch-py` lazily, so Chroma users don't pay the dependency cost.
+The retrieval contract (LangChain `Runnable` with `.invoke(query) -> list[Document]`)
+is identical across backends — downstream code in `pipeline.py` and `evaluate.py`
+doesn't know or care which is active.
+
+A local single-node OpenSearch quickstart:
+
+```bash
+docker run -p 9200:9200 -e "discovery.type=single-node" \
+  -e "OPENSEARCH_INITIAL_ADMIN_PASSWORD=Strong@P4ss" \
+  opensearchproject/opensearch:latest
+```
 
 ---
 
@@ -80,7 +114,7 @@ flow — no OpenAI API key or network calls required.
 |---|---|
 | **RecursiveCharacterTextSplitter** | Preserves semantic boundaries (paragraphs → sentences → words) |
 | **chunk_size=512, overlap=50** | Empirical sweet spot — large enough for context, small enough to keep precision@k tight |
-| **Chroma (local)** | Zero-infra for demo; production version uses OpenSearch with kNN |
+| **Chroma + OpenSearch as backends** | Chroma for zero-infra demo; OpenSearch for production kNN at scale. Same retrieval contract; flip via `RAG_BACKEND` env var |
 | **MMR retrieval** | Reduces redundancy in top-k; meaningfully boosts answer relevance |
 | **Source citation enforced** | Output schema requires `[source: <doc>]` tags — primary hallucination mitigation |
 | **RAGAS quality gates** | Faithfulness ≥ 0.85, precision@k ≥ 0.80 enforced before promoting prompt changes |

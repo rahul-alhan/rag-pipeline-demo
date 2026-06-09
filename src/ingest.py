@@ -1,4 +1,5 @@
-"""Ingest documents → chunk → embed → persist to Chroma."""
+"""Ingest documents → chunk → embed → persist to the configured backend
+(Chroma for local dev, OpenSearch for production)."""
 from __future__ import annotations
 
 import argparse
@@ -9,7 +10,6 @@ from langchain_community.document_loaders import (
     PyPDFLoader,
     TextLoader,
 )
-from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
@@ -43,7 +43,12 @@ def chunk_documents(docs):
     return splitter.split_documents(docs)
 
 
-def build_index(docs_dir: str, persist_dir: str) -> Chroma:
+def build_index(docs_dir: str, persist_dir: str | None = None):
+    """Build the index for the configured backend (CONFIG.backend).
+
+    For Chroma: persists to a local directory.
+    For OpenSearch: pushes to the configured cluster/index.
+    """
     print(f"Loading documents from {docs_dir}...")
     raw = load_documents(docs_dir)
     print(f"  → {len(raw)} documents")
@@ -51,6 +56,17 @@ def build_index(docs_dir: str, persist_dir: str) -> Chroma:
     chunks = chunk_documents(raw)
     print(f"  → {len(chunks)} chunks")
 
+    if CONFIG.backend == "opensearch":
+        from .retriever_opensearch import build_opensearch_index
+        print(f"Pushing to OpenSearch index '{CONFIG.opensearch_index}' at {CONFIG.opensearch_host}...")
+        build_opensearch_index(chunks, recreate=True)
+        print("Done.")
+        return None
+
+    # Default: Chroma local
+    from langchain_chroma import Chroma
+
+    persist_dir = persist_dir or CONFIG.persist_dir
     embeddings = OpenAIEmbeddings(model=CONFIG.embedding_model)
     vec = Chroma.from_documents(
         documents=chunks,
